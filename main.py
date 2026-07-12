@@ -134,6 +134,8 @@ def search_nyaa(
     """Search nyaa.si and return results as JSON"""
     req = build_request(q=q, category=category, sub_category=sub_category, sort=sort, order=order, page=page, is_sukebei=False)
     results = nyaa_api.search(req)
+    if not results:
+        raise HTTPException(status_code=404, detail="No torrent/magnet link found")
     return results.to_dict()
 
 @app.get("/sukebei", tags=["Search"], summary="Sukebei Category Search", operation_id="sukebei_category_search_sukebei_get")
@@ -148,6 +150,8 @@ def search_sukebei(
     """Search sukebei.nyaa.si and return results as JSON"""
     req = build_request(q=q, category=category, sub_category=sub_category, sort=sort, order=order, page=page, is_sukebei=True)
     results = sukebei_api.search(req)
+    if not results:
+        raise HTTPException(status_code=404, detail="No torrent/magnet link found")
     return results.to_dict()
 
 @app.get("/nyaa/id/{torrent_id}", tags=["ID Search"], summary="Nyaa Id Search", operation_id="nyaa_id_search_nyaa_id__torrent_id__get")
@@ -181,6 +185,8 @@ def search_nyaa_user(
     """Search for torrents uploaded by a specific user on nyaa.si."""
     req = build_request(q=q, user_name=user_name, category=category, sub_category=sub_category, sort=sort, order=order, page=page, is_sukebei=False)
     results = nyaa_api.search(req)
+    if not results:
+        raise HTTPException(status_code=404, detail="No torrent/magnet link found")
     return results.to_dict()
 
 @app.get("/sukebei/user/{user_name}", tags=["User Search"], summary="Sukebei User Search", operation_id="sukebei_user_search_sukebei_user__user_name__get")
@@ -196,4 +202,6 @@ def search_sukebei_user(
     """Search for torrents uploaded by a specific user on sukebei.nyaa.si."""
     req = build_request(q=q, user_name=user_name, category=category, sub_category=sub_category, sort=sort, order=order, page=page, is_sukebei=True)
     results = sukebei_api.search(req)
+    if not results:
+        raise HTTPException(status_code=404, detail="No torrent/magnet link found")
     return results.to_dict()

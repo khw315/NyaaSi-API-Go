@@ -102,6 +102,8 @@ def parse_torrent_list(html: str, is_sukebei: bool) -> list[TorrentPreview]:
     soup = BeautifulSoup(html, "html.parser")
     table = soup.select_one("table.torrent-list > tbody")
     if table is None:
+        if "no torrents found" in html.lower():
+            return []
         raise WebScrapeException("Cannot find torrent-list table")
 
     results = []
