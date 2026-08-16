@@ -12,7 +12,7 @@ const docTemplate = `{
         "contact": {},
         "license": {
             "name": "GPL-3.0 License",
-            "url": "https://github.com/khw315/NyaaSi-API-Python/blob/master/LICENSE"
+            "url": "https://github.com/khw315/NyaaSi-API-Go/blob/master/LICENSE"
         },
         "version": "{{.Version}}"
     },

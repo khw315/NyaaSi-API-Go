@@ -22,7 +22,7 @@ FROM alpine:3.20
 
 WORKDIR /app
 
-LABEL org.opencontainers.image.source=https://github.com/khw315/NyaaSi-API-Python
+LABEL org.opencontainers.image.source=https://github.com/khw315/NyaaSi-API-Go
 LABEL org.opencontainers.image.licenses=GPL-3.0
 LABEL org.opencontainers.image.description="API for nyaa.si and sukebei.nyaa.si built with Go"
 

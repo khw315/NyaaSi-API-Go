@@ -8,8 +8,8 @@ import (
 	"strconv"
 	"strings"
 
-	docs "github.com/khw315/NyaaSi-API-Python/docs"
-	"github.com/khw315/NyaaSi-API-Python/pkg/scraper"
+	docs "github.com/khw315/NyaaSi-API-Go/docs"
+	"github.com/khw315/NyaaSi-API-Go/pkg/scraper"
 	httpSwagger "github.com/swaggo/http-swagger/v2"
 )
 
@@ -22,7 +22,7 @@ const (
 // @version         1.0.0
 // @description     (Unofficial) Nyaa & Sukebei API built with Go
 // @license.name    GPL-3.0 License
-// @license.url     https://github.com/khw315/NyaaSi-API-Python/blob/master/LICENSE
+// @license.url     https://github.com/khw315/NyaaSi-API-Go/blob/master/LICENSE
 // @BasePath        /
 
 type Server struct {
@@ -125,7 +125,7 @@ func (s *Server) handleHome(w http.ResponseWriter, r *http.Request) {
 		"version": "1.0.0",
 		"docs":    "/docs",
 		"license": "GPL-3.0 License",
-		"github":  "https://github.com/khw315/NyaaSi-API-Python",
+		"github":  "https://github.com/khw315/NyaaSi-API-Go",
 	})
 }
 

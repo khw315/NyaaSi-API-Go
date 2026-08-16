@@ -1,4 +1,4 @@
-module github.com/khw315/NyaaSi-API-Python
+module github.com/khw315/NyaaSi-API-Go
 
 go 1.22
 

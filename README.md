@@ -1,6 +1,6 @@
-# NyaaSi-API-Python (Python Port + REST API)
+# NyaaSi-API-Go (Go Port + REST API)
 
-A high-performance, **pure-Python** rewrite of the [Java NyaaSi-API](https://github.com/aki-ks/NyaaSi-API). This project provides a robust, containerized REST API that mirrors the [Nyaa-API](https://github.com/Vivek-Kolhe/Nyaa-API) structure while offering faster execution and native Python async potential.
+A high-performance, **pure-Go** rewrite of NyaaSi-API. This project provides a robust, containerized REST API built with Go `net/http` standard library that mirrors the Nyaa-API structure while offering fast execution and low memory consumption.
 
 Scrapes **https://nyaa.si/** and **https://sukebei.nyaa.si/** directly.
 
@@ -8,55 +8,33 @@ Scrapes **https://nyaa.si/** and **https://sukebei.nyaa.si/** directly.
 
 ### Features
 
+- **High Performance**: Built with Go 1.22+ for sub-millisecond overhead and minimal memory footprint (~10MB RAM).
 - **Dual Scraper Support**: Seamlessly search both [nyaa.si](https://nyaa.si/) and [sukebei.nyaa.si](https://sukebei.nyaa.si/).
 - **Full REST Implementation**: Includes search, user uploads, and detailed torrent lookups.
 - **Standardized Output**: Returns consistent JSON schemas for easy integration: `{"count": X, "data": [...]}`.
-- **Interactive Documentation**: Built-in Swagger UI and Redoc support via FastAPI.
-- **Microservice Ready**: Containerized with Docker and Docker Compose.
+- **Interactive Documentation**: Built-in Swagger UI at `/docs`.
+- **Microservice Ready**: Multi-stage lightweight Docker image (`alpine`).
 
 ---
 
 ### Getting Started
 
 #### Docker (Recommended)
-The simplest way to get the API up and running is by using the Docker image or Docker Compose.
+The simplest way to get the API up and running is by using Docker or Docker Compose.
 
-**Option A: Pull & Run directly**
-```bash
-docker run -d --name nyaa-api -p 8383:80 ghcr.io/khw315/nyaasi-api-python:latest:latest
-```
-
-**Option B: Docker Compose**
+**Option A: Docker Compose**
 1. **Clone the repository**:
    ```bash
-   git clone https://github.com/khw315/NyaaSi-API-Python.git
-   cd NyaaSi-API-Python
+   git clone https://github.com/khw315/NyaaSi-API-Go.git
+   cd NyaaSi-API-Go
    ```
 2. **Start the service**:
    ```bash
-   docker-compose up -d
+   docker compose up --build -d
    ```
 3. **Access the API**:
    - **Documentation**: [http://localhost:8383/docs](http://localhost:8383/docs)
    - **Base URL**: `http://localhost:8383`
-
-#### Local Setup
-If you prefer to run it manually without Docker:
-
-1. **Create a virtual environment**:
-   ```bash
-   python -m venv venv
-   source venv/bin/activate  # On Windows: venv\Scripts\activate
-   ```
-2. **Install dependencies**:
-   ```bash
-   pip install -r requirements.txt
-   ```
-3. **Run the application**:
-   ```bash
-   # Using uvicorn directly
-   python -m uvicorn main:app --host 0.0.0.0 --port 8383
-   ```
 
 ---
 
@@ -82,7 +60,7 @@ Fetches full details including description, magnet link, hash, and file structur
 #### User Search
 `GET /nyaa/user/{user_name}` or `GET /sukebei/user/{user_name}`
 
-Search for torrents uploaded by a specific user. Supports the same query parameters as the global search.
+Search for torrents uploaded by a specific user. Supports the same query parameters as global search.
 
 ---
 

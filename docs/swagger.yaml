@@ -4,7 +4,7 @@ info:
   description: (Unofficial) Nyaa & Sukebei API built with Go
   license:
     name: GPL-3.0 License
-    url: https://github.com/khw315/NyaaSi-API-Python/blob/master/LICENSE
+    url: https://github.com/khw315/NyaaSi-API-Go/blob/master/LICENSE
   title: Nyaa-API
   version: 1.0.0
 paths:
