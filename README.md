@@ -17,61 +17,6 @@ Scrapes **https://nyaa.si/** and **https://sukebei.nyaa.si/** directly.
 
 ---
 
-### 🏗️ System Architecture & Data Flow
-
-#### Component Architecture
-```mermaid
-graph TD
-    Client["Client / Browser / REST Consumer"] -->|HTTP GET| Router["Go 1.22+ ServeMux Router"]
-    Router -->|CORS Middleware| CORS["CORS & OPTIONS Preflight Handler"]
-    CORS --> Handlers["HTTP Handlers (main.go)"]
-    
-    subgraph Handlers ["HTTP Handlers & Endpoints"]
-        H1["/ (Home & Health)"]
-        H2["/docs (Swagger UI)"]
-        H3["/nyaa & /sukebei (Search)"]
-        H4["/nyaa/id/{id} & /sukebei/id/{id} (Details)"]
-        H5["/nyaa/user/{user} & /sukebei/user/{user}"]
-    end
-    
-    Handlers -->|SearchRequest / ID| API["NyaaSiAPI Client (pkg/scraper/api.go)"]
-    API -->|HTTP Scraping GET| Target["Target Servers (nyaa.si / sukebei.nyaa.si)"]
-    Target -->|HTML Body| Parser["HTML Parser (pkg/scraper/parsers.go)"]
-    Parser -->|goquery Parsing| Models["Data Models (pkg/scraper/models.go)"]
-    Models -->|ToDict JSON| Handlers
-    Handlers -->|200 OK JSON| Client
-```
-
-#### Request & Scraping Sequence
-```mermaid
-sequenceDiagram
-    autonumber
-    actor Client
-    participant Router as ServeMux Router
-    participant Handler as API Handler
-    participant Scraper as NyaaSiAPI
-    participant Target as nyaa.si / sukebei.nyaa.si
-    participant Parser as HTML Parser
-
-    Client->>Router: GET /nyaa?q=sword&category=anime
-    Router->>Handler: handleSearchNyaa(w, r)
-    Handler->>Scraper: Search(SearchRequest)
-    Scraper->>Target: HTTP GET https://nyaa.si/?q=sword&c=1_2
-    Target-->>Scraper: 200 OK HTML Document
-    Scraper->>Parser: ParseTorrentList(goquery.Document)
-    Parser-->>Scraper: SearchResult ([]TorrentPreview)
-    Scraper-->>Handler: SearchResult
-    Handler-->>Client: 200 OK JSON {"count": X, "data": [...]}
-```
-
-#### Module Responsibilities
-- **[main.go](main.go)**: Web server initialization, Go 1.22 `ServeMux` path routing, CORS middleware, error helpers, and Swagger UI integration at `/docs`.
-- **[pkg/scraper/api.go](pkg/scraper/api.go)**: HTTP client for scraping `nyaa.si` and `sukebei.nyaa.si`, handling URL query encoding, and handling HTTP errors (404/500).
-- **[pkg/scraper/parsers.go](pkg/scraper/parsers.go)**: HTML DOM parsing powered by `goquery`, converting torrent tables and detailed torrent panels into structured Go structs.
-- **[pkg/scraper/models.go](pkg/scraper/models.go)**: Domain data models (`TorrentPreview`, `TorrentInfo`, `TorrentComment`), category mapping taxonomy, and JSON serializer helpers (`ToDict()`).
-
----
-
 ### Getting Started
 
 #### Docker (Recommended)
@@ -125,6 +70,61 @@ Search for torrents uploaded by a specific user. Supports the same query paramet
 | :--- | :--- | :--- |
 | **Nyaa** | `anime`, `audio`, `literature`, `live_action`, `pictures`, `software` | `english`, `raw`, `non-english`, `lossless`, `lossy` |
 | **Sukebei** | `art`, `real` | `anime`, `doujinshi`, `games`, `manga`, `pictures`, `photobooks`, `videos` |
+
+---
+
+### 🏗️ System Architecture & Data Flow
+
+#### Component Architecture
+```mermaid
+graph TD
+    Client["Client / Browser / REST Consumer"] -->|HTTP GET| Router["Go 1.22+ ServeMux Router"]
+    Router -->|CORS Middleware| CORS["CORS & OPTIONS Preflight Handler"]
+    CORS --> Handlers["HTTP Handlers (main.go)"]
+    
+    subgraph Handlers ["HTTP Handlers & Endpoints"]
+        H1["/ (Home & Health)"]
+        H2["/docs (Swagger UI)"]
+        H3["/nyaa & /sukebei (Search)"]
+        H4["/nyaa/id/{id} & /sukebei/id/{id} (Details)"]
+        H5["/nyaa/user/{user} & /sukebei/user/{user}"]
+    end
+    
+    Handlers -->|SearchRequest / ID| API["NyaaSiAPI Client (pkg/scraper/api.go)"]
+    API -->|HTTP Scraping GET| Target["Target Servers (nyaa.si / sukebei.nyaa.si)"]
+    Target -->|HTML Body| Parser["HTML Parser (pkg/scraper/parsers.go)"]
+    Parser -->|goquery Parsing| Models["Data Models (pkg/scraper/models.go)"]
+    Models -->|ToDict JSON| Handlers
+    Handlers -->|200 OK JSON| Client
+```
+
+#### Request & Scraping Sequence
+```mermaid
+sequenceDiagram
+    autonumber
+    actor Client
+    participant Router as ServeMux Router
+    participant Handler as API Handler
+    participant Scraper as NyaaSiAPI
+    participant Target as nyaa.si / sukebei.nyaa.si
+    participant Parser as HTML Parser
+
+    Client->>Router: GET /nyaa?q=sword&category=anime
+    Router->>Handler: handleSearchNyaa(w, r)
+    Handler->>Scraper: Search(SearchRequest)
+    Scraper->>Target: HTTP GET https://nyaa.si/?q=sword&c=1_2
+    Target-->>Scraper: 200 OK HTML Document
+    Scraper->>Parser: ParseTorrentList(goquery.Document)
+    Parser-->>Scraper: SearchResult ([]TorrentPreview)
+    Scraper-->>Handler: SearchResult
+    Handler-->>Client: 200 OK JSON {"count": X, "data": [...]}
+```
+
+#### Module Responsibilities
+- **[main.go](main.go)**: Web server initialization, Go 1.22 `ServeMux` path routing, CORS middleware, error helpers, and Swagger UI integration at `/docs`.
+- **[pkg/scraper/api.go](pkg/scraper/api.go)**: HTTP client for scraping `nyaa.si` and `sukebei.nyaa.si`, handling URL query encoding, and handling HTTP errors (404/500).
+- **[pkg/scraper/parsers.go](pkg/scraper/parsers.go)**: HTML DOM parsing powered by `goquery`, converting torrent tables and detailed torrent panels into structured Go structs.
+- **[pkg/scraper/models.go](pkg/scraper/models.go)**: Domain data models (`TorrentPreview`, `TorrentInfo`, `TorrentComment`), category mapping taxonomy, and JSON serializer helpers (`ToDict()`).
 
 ---
 
