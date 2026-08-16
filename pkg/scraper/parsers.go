@@ -127,58 +127,64 @@ func ParseTorrentList(doc *goquery.Document, isSukebei bool) (SearchResult, erro
 	return results, nil
 }
 
-func parsePanelBody(body *goquery.Selection, info *TorrentInfo, isSukebei bool) {
-	rows := body.Find("div.row")
-
-	getCell := func(rowIdx, colIdx int) *goquery.Selection {
-		if rowIdx < rows.Length() {
-			cols := rows.Eq(rowIdx).Find("div.col-md-5")
-			if colIdx < cols.Length() {
-				return cols.Eq(colIdx)
-			}
+func parsePanelBodyCell(rows *goquery.Selection, rowIdx, colIdx int) *goquery.Selection {
+	if rowIdx < rows.Length() {
+		cols := rows.Eq(rowIdx).Find("div.col-md-5")
+		if colIdx < cols.Length() {
+			return cols.Eq(colIdx)
 		}
-		return nil
 	}
+	return nil
+}
 
-	if cell := getCell(0, 0); cell != nil {
-		catLinks := cell.Find("a")
-		if catLinks.Length() >= 2 {
+func parsePanelBodyLeftCol(rows *goquery.Selection, info *TorrentInfo, isSukebei bool) {
+	if cell := parsePanelBodyCell(rows, 0, 0); cell != nil {
+		if catLinks := cell.Find("a"); catLinks.Length() >= 2 {
 			href, _ := catLinks.Eq(1).Attr("href")
 			cat := parseCategoryFromURL(href, isSukebei)
 			info.Category = &cat
 		}
 	}
-	if cell := getCell(1, 0); cell != nil {
+	if cell := parsePanelBodyCell(rows, 1, 0); cell != nil {
 		if uploaderTag := cell.Find("a").First(); uploaderTag.Length() > 0 {
 			info.Uploader = strings.TrimSpace(uploaderTag.Text())
 		}
 	}
-	if cell := getCell(2, 0); cell != nil {
+	if cell := parsePanelBodyCell(rows, 2, 0); cell != nil {
 		info.Information = strings.TrimSpace(cell.Text())
 	}
-	if cell := getCell(3, 0); cell != nil {
+	if cell := parsePanelBodyCell(rows, 3, 0); cell != nil {
 		info.Size = strings.TrimSpace(cell.Text())
 	}
-	if cell := getCell(0, 1); cell != nil {
+	if cell := parsePanelBodyCell(rows, 4, 0); cell != nil {
+		info.Hash = strings.TrimSpace(cell.Find("kbd").Text())
+	}
+}
+
+func parsePanelBodyRightCol(rows *goquery.Selection, info *TorrentInfo) {
+	if cell := parsePanelBodyCell(rows, 0, 1); cell != nil {
 		tsStr, _ := cell.Attr(attrDataTimestamp)
 		t := parseTimestamp(tsStr)
 		info.Date = &t
 	}
-	if cell := getCell(1, 1); cell != nil {
+	if cell := parsePanelBodyCell(rows, 1, 1); cell != nil {
 		val, _ := strconv.Atoi(strings.TrimSpace(cell.Find("span").Text()))
 		info.Seeders = val
 	}
-	if cell := getCell(2, 1); cell != nil {
+	if cell := parsePanelBodyCell(rows, 2, 1); cell != nil {
 		val, _ := strconv.Atoi(strings.TrimSpace(cell.Find("span").Text()))
 		info.Leechers = val
 	}
-	if cell := getCell(3, 1); cell != nil {
+	if cell := parsePanelBodyCell(rows, 3, 1); cell != nil {
 		val, _ := strconv.Atoi(strings.TrimSpace(cell.Text()))
 		info.Completed = val
 	}
-	if cell := getCell(4, 0); cell != nil {
-		info.Hash = strings.TrimSpace(cell.Find("kbd").Text())
-	}
+}
+
+func parsePanelBody(body *goquery.Selection, info *TorrentInfo, isSukebei bool) {
+	rows := body.Find("div.row")
+	parsePanelBodyLeftCol(rows, info, isSukebei)
+	parsePanelBodyRightCol(rows, info)
 }
 
 func parsePanelFooter(footer *goquery.Selection, info *TorrentInfo, isSukebei bool) {

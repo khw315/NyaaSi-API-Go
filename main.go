@@ -220,7 +220,7 @@ func (s *Server) handleGetSukebeiID(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	info, err := s.nyaaAPI.GetTorrentInfo(torrentID)
+	info, err := s.sukebeiAPI.GetTorrentInfo(torrentID)
 	if err != nil {
 		writeError(w, http.StatusNotFound, errTorrentNotFound)
 		return
