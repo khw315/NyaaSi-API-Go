@@ -1,0 +1,291 @@
+basePath: /
+host: localhost:88
+info:
+  contact: {}
+  description: (Unofficial) Nyaa & Sukebei API built with Go
+  license:
+    name: GPL-3.0 License
+    url: https://github.com/khw315/NyaaSi-API-Python/blob/master/LICENSE
+  title: Nyaa-API
+  version: 1.0.0
+paths:
+  /:
+    get:
+      description: 'Home Route: Returns app details and health status.'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+      summary: Home
+      tags:
+      - Home
+  /nyaa:
+    get:
+      description: Search nyaa.si and return results as JSON
+      parameters:
+      - description: The search query for torrents.
+        example: sword art online
+        in: query
+        name: q
+        type: string
+      - description: Filter torrents by category (e.g., anime, audio, literature,
+          pictures, software).
+        example: anime
+        in: query
+        name: category
+        type: string
+      - description: Filter torrents by subcategory (e.g., english, raw, non-english).
+        example: english
+        in: query
+        name: sub_category
+        type: string
+      - description: Sort torrents by attribute (comments, size, date, seeders, leechers,
+          downloads).
+        example: seeders
+        in: query
+        name: sort
+        type: string
+      - description: Order in which torrents should be sorted (asc or desc).
+        example: desc
+        in: query
+        name: order
+        type: string
+      - default: 1
+        description: Page number for pagination.
+        in: query
+        name: page
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            additionalProperties: true
+            type: object
+        "404":
+          description: Not Found
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+      summary: Nyaa Category Search
+      tags:
+      - Search
+  /nyaa/id/{torrent_id}:
+    get:
+      description: Fetch full details for a specific Nyaa torrent.
+      parameters:
+      - description: The unique numeric ID of the torrent on nyaa.si.
+        example: 12345
+        in: path
+        name: torrent_id
+        required: true
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            additionalProperties: true
+            type: object
+        "404":
+          description: Not Found
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+      summary: Nyaa Id Search
+      tags:
+      - ID Search
+  /nyaa/user/{user_name}:
+    get:
+      description: Search for torrents uploaded by a specific user on nyaa.si.
+      parameters:
+      - description: The Nyaa user name whose uploads you want to search.
+        example: HorribleSubs
+        in: path
+        name: user_name
+        required: true
+        type: string
+      - description: The search query for torrents.
+        in: query
+        name: q
+        type: string
+      - description: Filter torrents by category.
+        in: query
+        name: category
+        type: string
+      - description: Filter torrents by subcategory.
+        in: query
+        name: sub_category
+        type: string
+      - description: Sort torrents by attribute.
+        in: query
+        name: sort
+        type: string
+      - description: Sorting order.
+        in: query
+        name: order
+        type: string
+      - default: 1
+        description: Page number.
+        in: query
+        name: page
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            additionalProperties: true
+            type: object
+        "404":
+          description: Not Found
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+      summary: Nyaa User Search
+      tags:
+      - User Search
+  /sukebei:
+    get:
+      description: Search sukebei.nyaa.si and return results as JSON
+      parameters:
+      - description: The search query for torrents.
+        example: MIDA-512
+        in: query
+        name: q
+        type: string
+      - description: Filter torrents by category (e.g., art, real).
+        example: real
+        in: query
+        name: category
+        type: string
+      - description: Filter torrents by subcategory (e.g., anime, doujinshi, games,
+          manga, pictures, photobooks, videos).
+        example: videos
+        in: query
+        name: sub_category
+        type: string
+      - description: Sort torrents by attribute (comments, size, date, seeders, leechers,
+          downloads).
+        example: downloads
+        in: query
+        name: sort
+        type: string
+      - description: Order in which torrents should be sorted (asc or desc).
+        example: desc
+        in: query
+        name: order
+        type: string
+      - default: 1
+        description: Page number for pagination.
+        in: query
+        name: page
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            additionalProperties: true
+            type: object
+        "404":
+          description: Not Found
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+      summary: Sukebei Category Search
+      tags:
+      - Search
+  /sukebei/id/{torrent_id}:
+    get:
+      description: Fetch full details for a specific Sukebei torrent.
+      parameters:
+      - description: The unique numeric ID of the torrent on sukebei.nyaa.si.
+        example: 4505820
+        in: path
+        name: torrent_id
+        required: true
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            additionalProperties: true
+            type: object
+        "404":
+          description: Not Found
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+      summary: Sukebei Id Search
+      tags:
+      - ID Search
+  /sukebei/user/{user_name}:
+    get:
+      description: Search for torrents uploaded by a specific user on sukebei.nyaa.si.
+      parameters:
+      - description: The Sukebei user name whose uploads you want to search.
+        example: offkab
+        in: path
+        name: user_name
+        required: true
+        type: string
+      - description: The search query for torrents.
+        in: query
+        name: q
+        type: string
+      - description: Filter torrents by category.
+        in: query
+        name: category
+        type: string
+      - description: Filter torrents by subcategory.
+        in: query
+        name: sub_category
+        type: string
+      - description: Sort torrents by attribute.
+        in: query
+        name: sort
+        type: string
+      - description: Sorting order.
+        in: query
+        name: order
+        type: string
+      - default: 1
+        description: Page number.
+        in: query
+        name: page
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            additionalProperties: true
+            type: object
+        "404":
+          description: Not Found
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+      summary: Sukebei User Search
+      tags:
+      - User Search
+swagger: "2.0"

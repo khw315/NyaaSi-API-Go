@@ -8,13 +8,23 @@ import (
 	"strconv"
 	"strings"
 
+	_ "github.com/khw315/NyaaSi-API-Python/docs"
 	"github.com/khw315/NyaaSi-API-Python/pkg/scraper"
+	httpSwagger "github.com/swaggo/http-swagger/v2"
 )
 
 const (
 	errNoTorrentFound  = "No torrent/magnet link found"
 	errTorrentNotFound = "Torrent not found"
 )
+
+// @title           Nyaa-API
+// @version         1.0.0
+// @description     (Unofficial) Nyaa & Sukebei API built with Go
+// @license.name    GPL-3.0 License
+// @license.url     https://github.com/khw315/NyaaSi-API-Python/blob/master/LICENSE
+// @host            localhost:88
+// @BasePath        /
 
 type Server struct {
 	nyaaAPI    *scraper.NyaaSiAPI
@@ -90,6 +100,13 @@ func buildSearchRequest(r *http.Request, isSukebei bool) scraper.SearchRequest {
 	return req
 }
 
+// handleHome godoc
+// @Summary      Home
+// @Description  Home Route: Returns app details and health status.
+// @Tags         Home
+// @Produce      json
+// @Success      200  {object}  map[string]string
+// @Router       / [get]
 func (s *Server) handleHome(w http.ResponseWriter, r *http.Request) {
 	writeJSON(w, http.StatusOK, map[string]string{
 		"message": "Welcome to the (Unofficial) Nyaa API",
@@ -100,6 +117,20 @@ func (s *Server) handleHome(w http.ResponseWriter, r *http.Request) {
 	})
 }
 
+// handleSearchNyaa godoc
+// @Summary      Nyaa Category Search
+// @Description  Search nyaa.si and return results as JSON
+// @Tags         Search
+// @Produce      json
+// @Param        q             query     string  false  "The search query for torrents."  example(sword art online)
+// @Param        category      query     string  false  "Filter torrents by category (e.g., anime, audio, literature, pictures, software)."  example(anime)
+// @Param        sub_category  query     string  false  "Filter torrents by subcategory (e.g., english, raw, non-english)."  example(english)
+// @Param        sort          query     string  false  "Sort torrents by attribute (comments, size, date, seeders, leechers, downloads)."  example(seeders)
+// @Param        order         query     string  false  "Order in which torrents should be sorted (asc or desc)."  example(desc)
+// @Param        page          query     int     false  "Page number for pagination."  default(1)
+// @Success      200           {object}  map[string]interface{}
+// @Failure      404           {object}  map[string]string
+// @Router       /nyaa [get]
 func (s *Server) handleSearchNyaa(w http.ResponseWriter, r *http.Request) {
 	req := buildSearchRequest(r, false)
 	results, err := s.nyaaAPI.Search(req)
@@ -110,6 +141,20 @@ func (s *Server) handleSearchNyaa(w http.ResponseWriter, r *http.Request) {
 	writeJSON(w, http.StatusOK, results.ToDict())
 }
 
+// handleSearchSukebei godoc
+// @Summary      Sukebei Category Search
+// @Description  Search sukebei.nyaa.si and return results as JSON
+// @Tags         Search
+// @Produce      json
+// @Param        q             query     string  false  "The search query for torrents."  example(MIDA-512)
+// @Param        category      query     string  false  "Filter torrents by category (e.g., art, real)."  example(real)
+// @Param        sub_category  query     string  false  "Filter torrents by subcategory (e.g., anime, doujinshi, games, manga, pictures, photobooks, videos)."  example(videos)
+// @Param        sort          query     string  false  "Sort torrents by attribute (comments, size, date, seeders, leechers, downloads)."  example(downloads)
+// @Param        order         query     string  false  "Order in which torrents should be sorted (asc or desc)."  example(desc)
+// @Param        page          query     int     false  "Page number for pagination."  default(1)
+// @Success      200           {object}  map[string]interface{}
+// @Failure      404           {object}  map[string]string
+// @Router       /sukebei [get]
 func (s *Server) handleSearchSukebei(w http.ResponseWriter, r *http.Request) {
 	req := buildSearchRequest(r, true)
 	results, err := s.sukebeiAPI.Search(req)
@@ -120,6 +165,15 @@ func (s *Server) handleSearchSukebei(w http.ResponseWriter, r *http.Request) {
 	writeJSON(w, http.StatusOK, results.ToDict())
 }
 
+// handleGetNyaaID godoc
+// @Summary      Nyaa Id Search
+// @Description  Fetch full details for a specific Nyaa torrent.
+// @Tags         ID Search
+// @Produce      json
+// @Param        torrent_id  path      int  true  "The unique numeric ID of the torrent on nyaa.si."  example(12345)
+// @Success      200         {object}  map[string]interface{}
+// @Failure      404         {object}  map[string]string
+// @Router       /nyaa/id/{torrent_id} [get]
 func (s *Server) handleGetNyaaID(w http.ResponseWriter, r *http.Request) {
 	idStr := r.PathValue("torrent_id")
 	torrentID, err := strconv.Atoi(idStr)
@@ -137,6 +191,15 @@ func (s *Server) handleGetNyaaID(w http.ResponseWriter, r *http.Request) {
 	writeJSON(w, http.StatusOK, info.ToDict())
 }
 
+// handleGetSukebeiID godoc
+// @Summary      Sukebei Id Search
+// @Description  Fetch full details for a specific Sukebei torrent.
+// @Tags         ID Search
+// @Produce      json
+// @Param        torrent_id  path      int  true  "The unique numeric ID of the torrent on sukebei.nyaa.si."  example(4505820)
+// @Success      200         {object}  map[string]interface{}
+// @Failure      404         {object}  map[string]string
+// @Router       /sukebei/id/{torrent_id} [get]
 func (s *Server) handleGetSukebeiID(w http.ResponseWriter, r *http.Request) {
 	idStr := r.PathValue("torrent_id")
 	torrentID, err := strconv.Atoi(idStr)
@@ -154,6 +217,21 @@ func (s *Server) handleGetSukebeiID(w http.ResponseWriter, r *http.Request) {
 	writeJSON(w, http.StatusOK, info.ToDict())
 }
 
+// handleSearchNyaaUser godoc
+// @Summary      Nyaa User Search
+// @Description  Search for torrents uploaded by a specific user on nyaa.si.
+// @Tags         User Search
+// @Produce      json
+// @Param        user_name     path      string  true   "The Nyaa user name whose uploads you want to search."  example(HorribleSubs)
+// @Param        q             query     string  false  "The search query for torrents."
+// @Param        category      query     string  false  "Filter torrents by category."
+// @Param        sub_category  query     string  false  "Filter torrents by subcategory."
+// @Param        sort          query     string  false  "Sort torrents by attribute."
+// @Param        order         query     string  false  "Sorting order."
+// @Param        page          query     int     false  "Page number."  default(1)
+// @Success      200           {object}  map[string]interface{}
+// @Failure      404           {object}  map[string]string
+// @Router       /nyaa/user/{user_name} [get]
 func (s *Server) handleSearchNyaaUser(w http.ResponseWriter, r *http.Request) {
 	userName := r.PathValue("user_name")
 	if userName == "" {
@@ -172,6 +250,21 @@ func (s *Server) handleSearchNyaaUser(w http.ResponseWriter, r *http.Request) {
 	writeJSON(w, http.StatusOK, results.ToDict())
 }
 
+// handleSearchSukebeiUser godoc
+// @Summary      Sukebei User Search
+// @Description  Search for torrents uploaded by a specific user on sukebei.nyaa.si.
+// @Tags         User Search
+// @Produce      json
+// @Param        user_name     path      string  true   "The Sukebei user name whose uploads you want to search."  example(offkab)
+// @Param        q             query     string  false  "The search query for torrents."
+// @Param        category      query     string  false  "Filter torrents by category."
+// @Param        sub_category  query     string  false  "Filter torrents by subcategory."
+// @Param        sort          query     string  false  "Sort torrents by attribute."
+// @Param        order         query     string  false  "Sorting order."
+// @Param        page          query     int     false  "Page number."  default(1)
+// @Success      200           {object}  map[string]interface{}
+// @Failure      404           {object}  map[string]string
+// @Router       /sukebei/user/{user_name} [get]
 func (s *Server) handleSearchSukebeiUser(w http.ResponseWriter, r *http.Request) {
 	userName := r.PathValue("user_name")
 	if userName == "" {
@@ -194,13 +287,19 @@ func main() {
 	server := NewServer()
 
 	mux := http.NewServeMux()
-	mux.HandleFunc("GET /", server.handleHome)
+	mux.HandleFunc("GET /{$}", server.handleHome)
 	mux.HandleFunc("GET /nyaa", server.handleSearchNyaa)
 	mux.HandleFunc("GET /sukebei", server.handleSearchSukebei)
 	mux.HandleFunc("GET /nyaa/id/{torrent_id}", server.handleGetNyaaID)
 	mux.HandleFunc("GET /sukebei/id/{torrent_id}", server.handleGetSukebeiID)
 	mux.HandleFunc("GET /nyaa/user/{user_name}", server.handleSearchNyaaUser)
 	mux.HandleFunc("GET /sukebei/user/{user_name}", server.handleSearchSukebeiUser)
+
+	// Swagger UI docs endpoint
+	mux.Handle("GET /docs/", httpSwagger.WrapHandler)
+	mux.HandleFunc("GET /docs", func(w http.ResponseWriter, r *http.Request) {
+		http.Redirect(w, r, "/docs/index.html", http.StatusMovedPermanently)
+	})
 
 	port := "88"
 	log.Printf("Starting NyaaSi API (Go) server on port %s...", port)

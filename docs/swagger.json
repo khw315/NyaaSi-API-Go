@@ -1,0 +1,422 @@
+{
+    "swagger": "2.0",
+    "info": {
+        "description": "(Unofficial) Nyaa \u0026 Sukebei API built with Go",
+        "title": "Nyaa-API",
+        "contact": {},
+        "license": {
+            "name": "GPL-3.0 License",
+            "url": "https://github.com/khw315/NyaaSi-API-Python/blob/master/LICENSE"
+        },
+        "version": "1.0.0"
+    },
+    "host": "localhost:88",
+    "basePath": "/",
+    "paths": {
+        "/": {
+            "get": {
+                "description": "Home Route: Returns app details and health status.",
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Home"
+                ],
+                "summary": "Home",
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": {
+                                "type": "string"
+                            }
+                        }
+                    }
+                }
+            }
+        },
+        "/nyaa": {
+            "get": {
+                "description": "Search nyaa.si and return results as JSON",
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Search"
+                ],
+                "summary": "Nyaa Category Search",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "example": "sword art online",
+                        "description": "The search query for torrents.",
+                        "name": "q",
+                        "in": "query"
+                    },
+                    {
+                        "type": "string",
+                        "example": "anime",
+                        "description": "Filter torrents by category (e.g., anime, audio, literature, pictures, software).",
+                        "name": "category",
+                        "in": "query"
+                    },
+                    {
+                        "type": "string",
+                        "example": "english",
+                        "description": "Filter torrents by subcategory (e.g., english, raw, non-english).",
+                        "name": "sub_category",
+                        "in": "query"
+                    },
+                    {
+                        "type": "string",
+                        "example": "seeders",
+                        "description": "Sort torrents by attribute (comments, size, date, seeders, leechers, downloads).",
+                        "name": "sort",
+                        "in": "query"
+                    },
+                    {
+                        "type": "string",
+                        "example": "desc",
+                        "description": "Order in which torrents should be sorted (asc or desc).",
+                        "name": "order",
+                        "in": "query"
+                    },
+                    {
+                        "type": "integer",
+                        "default": 1,
+                        "description": "Page number for pagination.",
+                        "name": "page",
+                        "in": "query"
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": true
+                        }
+                    },
+                    "404": {
+                        "description": "Not Found",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": {
+                                "type": "string"
+                            }
+                        }
+                    }
+                }
+            }
+        },
+        "/nyaa/id/{torrent_id}": {
+            "get": {
+                "description": "Fetch full details for a specific Nyaa torrent.",
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "ID Search"
+                ],
+                "summary": "Nyaa Id Search",
+                "parameters": [
+                    {
+                        "type": "integer",
+                        "example": 12345,
+                        "description": "The unique numeric ID of the torrent on nyaa.si.",
+                        "name": "torrent_id",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": true
+                        }
+                    },
+                    "404": {
+                        "description": "Not Found",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": {
+                                "type": "string"
+                            }
+                        }
+                    }
+                }
+            }
+        },
+        "/nyaa/user/{user_name}": {
+            "get": {
+                "description": "Search for torrents uploaded by a specific user on nyaa.si.",
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "User Search"
+                ],
+                "summary": "Nyaa User Search",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "example": "HorribleSubs",
+                        "description": "The Nyaa user name whose uploads you want to search.",
+                        "name": "user_name",
+                        "in": "path",
+                        "required": true
+                    },
+                    {
+                        "type": "string",
+                        "description": "The search query for torrents.",
+                        "name": "q",
+                        "in": "query"
+                    },
+                    {
+                        "type": "string",
+                        "description": "Filter torrents by category.",
+                        "name": "category",
+                        "in": "query"
+                    },
+                    {
+                        "type": "string",
+                        "description": "Filter torrents by subcategory.",
+                        "name": "sub_category",
+                        "in": "query"
+                    },
+                    {
+                        "type": "string",
+                        "description": "Sort torrents by attribute.",
+                        "name": "sort",
+                        "in": "query"
+                    },
+                    {
+                        "type": "string",
+                        "description": "Sorting order.",
+                        "name": "order",
+                        "in": "query"
+                    },
+                    {
+                        "type": "integer",
+                        "default": 1,
+                        "description": "Page number.",
+                        "name": "page",
+                        "in": "query"
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": true
+                        }
+                    },
+                    "404": {
+                        "description": "Not Found",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": {
+                                "type": "string"
+                            }
+                        }
+                    }
+                }
+            }
+        },
+        "/sukebei": {
+            "get": {
+                "description": "Search sukebei.nyaa.si and return results as JSON",
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Search"
+                ],
+                "summary": "Sukebei Category Search",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "example": "MIDA-512",
+                        "description": "The search query for torrents.",
+                        "name": "q",
+                        "in": "query"
+                    },
+                    {
+                        "type": "string",
+                        "example": "real",
+                        "description": "Filter torrents by category (e.g., art, real).",
+                        "name": "category",
+                        "in": "query"
+                    },
+                    {
+                        "type": "string",
+                        "example": "videos",
+                        "description": "Filter torrents by subcategory (e.g., anime, doujinshi, games, manga, pictures, photobooks, videos).",
+                        "name": "sub_category",
+                        "in": "query"
+                    },
+                    {
+                        "type": "string",
+                        "example": "downloads",
+                        "description": "Sort torrents by attribute (comments, size, date, seeders, leechers, downloads).",
+                        "name": "sort",
+                        "in": "query"
+                    },
+                    {
+                        "type": "string",
+                        "example": "desc",
+                        "description": "Order in which torrents should be sorted (asc or desc).",
+                        "name": "order",
+                        "in": "query"
+                    },
+                    {
+                        "type": "integer",
+                        "default": 1,
+                        "description": "Page number for pagination.",
+                        "name": "page",
+                        "in": "query"
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": true
+                        }
+                    },
+                    "404": {
+                        "description": "Not Found",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": {
+                                "type": "string"
+                            }
+                        }
+                    }
+                }
+            }
+        },
+        "/sukebei/id/{torrent_id}": {
+            "get": {
+                "description": "Fetch full details for a specific Sukebei torrent.",
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "ID Search"
+                ],
+                "summary": "Sukebei Id Search",
+                "parameters": [
+                    {
+                        "type": "integer",
+                        "example": 4505820,
+                        "description": "The unique numeric ID of the torrent on sukebei.nyaa.si.",
+                        "name": "torrent_id",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": true
+                        }
+                    },
+                    "404": {
+                        "description": "Not Found",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": {
+                                "type": "string"
+                            }
+                        }
+                    }
+                }
+            }
+        },
+        "/sukebei/user/{user_name}": {
+            "get": {
+                "description": "Search for torrents uploaded by a specific user on sukebei.nyaa.si.",
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "User Search"
+                ],
+                "summary": "Sukebei User Search",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "example": "offkab",
+                        "description": "The Sukebei user name whose uploads you want to search.",
+                        "name": "user_name",
+                        "in": "path",
+                        "required": true
+                    },
+                    {
+                        "type": "string",
+                        "description": "The search query for torrents.",
+                        "name": "q",
+                        "in": "query"
+                    },
+                    {
+                        "type": "string",
+                        "description": "Filter torrents by category.",
+                        "name": "category",
+                        "in": "query"
+                    },
+                    {
+                        "type": "string",
+                        "description": "Filter torrents by subcategory.",
+                        "name": "sub_category",
+                        "in": "query"
+                    },
+                    {
+                        "type": "string",
+                        "description": "Sort torrents by attribute.",
+                        "name": "sort",
+                        "in": "query"
+                    },
+                    {
+                        "type": "string",
+                        "description": "Sorting order.",
+                        "name": "order",
+                        "in": "query"
+                    },
+                    {
+                        "type": "integer",
+                        "default": 1,
+                        "description": "Page number.",
+                        "name": "page",
+                        "in": "query"
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": true
+                        }
+                    },
+                    "404": {
+                        "description": "Not Found",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": {
+                                "type": "string"
+                            }
+                        }
+                    }
+                }
+            }
+        }
+    }
+}
