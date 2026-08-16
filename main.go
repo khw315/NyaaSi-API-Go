@@ -8,7 +8,7 @@ import (
 	"strconv"
 	"strings"
 
-	_ "github.com/khw315/NyaaSi-API-Python/docs"
+	docs "github.com/khw315/NyaaSi-API-Python/docs"
 	"github.com/khw315/NyaaSi-API-Python/pkg/scraper"
 	httpSwagger "github.com/swaggo/http-swagger/v2"
 )
@@ -23,12 +23,24 @@ const (
 // @description     (Unofficial) Nyaa & Sukebei API built with Go
 // @license.name    GPL-3.0 License
 // @license.url     https://github.com/khw315/NyaaSi-API-Python/blob/master/LICENSE
-// @host            localhost:88
 // @BasePath        /
 
 type Server struct {
 	nyaaAPI    *scraper.NyaaSiAPI
 	sukebeiAPI *scraper.NyaaSiAPI
+}
+
+func corsMiddleware(next http.Handler) http.Handler {
+	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		w.Header().Set("Access-Control-Allow-Origin", "*")
+		w.Header().Set("Access-Control-Allow-Methods", "GET, POST, PUT, DELETE, OPTIONS")
+		w.Header().Set("Access-Control-Allow-Headers", "Content-Type, Authorization, X-Requested-With")
+		if r.Method == http.MethodOptions {
+			w.WriteHeader(http.StatusOK)
+			return
+		}
+		next.ServeHTTP(w, r)
+	})
 }
 
 func NewServer() *Server {
@@ -284,6 +296,9 @@ func (s *Server) handleSearchSukebeiUser(w http.ResponseWriter, r *http.Request)
 }
 
 func main() {
+	// Set dynamic empty host so Swagger UI sends relative requests matching any port/domain
+	docs.SwaggerInfo.Host = ""
+
 	server := NewServer()
 
 	mux := http.NewServeMux()
@@ -303,7 +318,7 @@ func main() {
 
 	port := "88"
 	log.Printf("Starting NyaaSi API (Go) server on port %s...", port)
-	if err := http.ListenAndServe(fmt.Sprintf(":%s", port), mux); err != nil {
+	if err := http.ListenAndServe(fmt.Sprintf(":%s", port), corsMiddleware(mux)); err != nil {
 		log.Fatalf("Server error: %v", err)
 	}
 }

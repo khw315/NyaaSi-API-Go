@@ -1,5 +1,4 @@
 basePath: /
-host: localhost:88
 info:
   contact: {}
   description: (Unofficial) Nyaa & Sukebei API built with Go
