@@ -26,9 +26,13 @@ func NewNyaaSiAPI(isSukebei bool) *NyaaSiAPI {
 	if isSukebei {
 		domain = "sukebei.nyaa.si"
 	}
+	return NewNyaaSiAPIWithBaseURL(fmt.Sprintf("https://%s", domain), isSukebei)
+}
+
+func NewNyaaSiAPIWithBaseURL(baseURL string, isSukebei bool) *NyaaSiAPI {
 	return &NyaaSiAPI{
 		isSukebei: isSukebei,
-		baseURL:   fmt.Sprintf("https://%s", domain),
+		baseURL:   baseURL,
 		httpClient: &http.Client{
 			Timeout: 30 * time.Second,
 		},

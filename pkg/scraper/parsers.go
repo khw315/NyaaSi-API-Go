@@ -242,7 +242,7 @@ func parseTorrentComments(doc *goquery.Document, info *TorrentInfo) {
 func ParseTorrentInfo(doc *goquery.Document, isSukebei bool) (*TorrentInfo, error) {
 	var panel *goquery.Selection
 	doc.Find("div.panel").Each(func(i int, s *goquery.Selection) {
-		if s.Find("div.panel-footer.clearfix").Length() > 0 {
+		if s.Find("div.panel-footer").Length() > 0 {
 			panel = s
 		}
 	})
@@ -264,7 +264,7 @@ func ParseTorrentInfo(doc *goquery.Document, isSukebei bool) (*TorrentInfo, erro
 	info.Title = strings.TrimSpace(panel.Find("div.panel-heading .panel-title").First().Text())
 
 	parsePanelBody(panel.Find("div.panel-body"), info, isSukebei)
-	parsePanelFooter(panel.Find("div.panel-footer.clearfix"), info, isSukebei)
+	parsePanelFooter(panel.Find("div.panel-footer"), info, isSukebei)
 
 	if descDiv := doc.Find("div#torrent-description"); descDiv.Length() > 0 {
 		info.Description = strings.TrimSpace(descDiv.Text())
