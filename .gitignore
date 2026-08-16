@@ -1,1 +1,31 @@
-__pycache__/
+# Binaries and compiled outputs
+*.exe
+*.dll
+*.so
+*.dylib
+*.test
+*.out
+nyaa-api
+bin/
+
+# Test & Coverage artifacts
+coverage.out
+coverage.html
+
+# Dependency directories
+vendor/
+
+# IDE / Editor settings
+.vscode/
+.idea/
+*.swp
+*.swo
+
+# OS files
+.DS_Store
+Thumbs.db
+
+# Environment / Secret files
+.env
+.env.*
+!.env.example
