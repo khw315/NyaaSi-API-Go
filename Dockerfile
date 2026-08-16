@@ -1,38 +1,37 @@
 # ──────────────────────────────────────────────────────────────
-# NyaaSi-API Python — Docker image
+# NyaaSi-API Go — Docker image
 # ──────────────────────────────────────────────────────────────
-FROM python:3.12-slim
+FROM golang:1.22-alpine AS builder
 
-# Keep Python output unbuffered so logs appear in real time
-ENV PYTHONUNBUFFERED=1 \
-    PYTHONDONTWRITEBYTECODE=1
+WORKDIR /app
+
+# Copy module files and download dependencies
+COPY go.mod go.sum ./
+RUN go mod download
+
+# Copy source code
+COPY . .
+
+# Build static Go binary
+RUN CGO_ENABLED=0 GOOS=linux go build -ldflags="-w -s" -o nyaa-api .
+
+# ──────────────────────────────────────────────────────────────
+# Final stage: minimal runtime environment
+# ──────────────────────────────────────────────────────────────
+FROM alpine:3.20
 
 WORKDIR /app
 
 LABEL org.opencontainers.image.source=https://github.com/khw315/NyaaSi-API-Python
 LABEL org.opencontainers.image.licenses=GPL-3.0
-LABEL org.opencontainers.image.description="API for nyaa.si and sukebei.nyaa.si"
+LABEL org.opencontainers.image.description="API for nyaa.si and sukebei.nyaa.si built with Go"
 
-# ── Install system deps required by lxml ──────────────────────
-RUN apt-get update && apt-get install -y --no-install-recommends \
-        libxml2 \
-        libxslt1.1 \
-    && rm -rf /var/lib/apt/lists/*
+# Install ca-certificates for HTTPS requests to nyaa.si
+RUN apk add --no-cache ca-certificates
 
-# ── Upgrade toolchain so setuptools.backends.legacy is available
-RUN pip install --no-cache-dir --upgrade pip setuptools wheel
+# Copy binary from builder
+COPY --from=builder /app/nyaa-api /app/nyaa-api
 
-# ── Copy only the requirements first (cache-friendly) ───────────
-COPY requirements.txt ./
-
-# Install runtime dependencies
-RUN pip install --no-cache-dir -r requirements.txt
-
-# ── Copy the rest of the source ───────────────────────────────
-COPY . .
-
-# Expose the port for the FastAPI service
 EXPOSE 88
 
-# Default command: span the API web service
-CMD ["uvicorn", "main:app", "--host", "0.0.0.0", "--port", "88"]
+CMD ["/app/nyaa-api"]

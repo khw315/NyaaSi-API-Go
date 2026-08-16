@@ -1,1 +1,4 @@
 __pycache__/
+*.exe
+nyaa-api
+coverage.out
