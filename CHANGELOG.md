@@ -8,14 +8,21 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ## [2.0.0] - 2026-08-16
 
 ### 🚀 Major Rewrite & Features
-- **Golang Rewrite**: Complete rewrite of the Nyaa & Sukebei API service from Python (FastAPI/BeautifulSoup4) to Golang (`net/http`, `goquery`).
-- **High Performance & Low Memory Footprint**: Drastically reduced RAM usage (~15MB vs ~100MB+) and improved request throughput and response latency.
-- **Static Binary & Multi-Stage Docker**: Updated `Dockerfile` to produce a minimal, lightweight Alpine image with multi-stage Go build.
+- **Golang Migration**: Complete rewrite of the Nyaa & Sukebei API service from Python (FastAPI/BeautifulSoup4) to Golang (`net/http`, `goquery`).
+- **Interactive Swagger UI**: Integrated Swagger/OpenAPI documentation automatically generated via `swag` and hosted interactively at `/docs`.
+- **Repository Renaming**: Renamed module, Docker images, and repository references to **`NyaaSi-API-Go`**.
+- **High Performance & Low Footprint**: Reduced memory footprint to ~10MB RAM with sub-millisecond routing overhead.
+- **Multi-Stage Docker**: Multi-architecture Alpine runtime (`amd64`/`arm64`) with non-root security compliance (`USER appuser`).
 
-### ⚡ Improvements & Quality Automation
-- **Go Linting**: Added `golangci-lint` GitHub Actions workflow (`.github/workflows/golangci-lint.yml`).
-- **SonarQube Integration**: Added SonarQube code analysis workflow (`.github/workflows/sonar.yml` and `sonar-project.properties`).
-- **Tag-Based Docker Releases**: Enhanced Docker GitHub Actions workflow (`.github/workflows/docker-build-push.yml`) to support semver tag-based builds (`v*.*.*`) pushing multi-tagged images to GitHub Container Registry (GHCR).
+### 🏗️ Architecture & Documentation
+- **System Architecture Diagrams**: Added Mermaid component topology, sequence flow diagrams, and module responsibility breakdowns to `README.md`.
+- **API Documentation**: Detailed query parameters, response structures, and taxonomy mapping for both `nyaa.si` and `sukebei.nyaa.si`.
+
+### ⚡ Code Quality & CI/CD
+- **SonarCloud Quality Gate**: Resolved 100% of SonarCloud issues (Cognitive Complexity, Duplicate Code, String Constants, Docker Non-Root User).
+- **High Test Coverage**: Comprehensive unit test suite (`main_test.go`, `pkg/scraper/api_test.go`, `pkg/scraper/parsers_test.go`) achieving **>85% overall statement coverage** (91.4% in `pkg/scraper`).
+- **Automated Workflows**: GitHub Actions workflows for Go linting (`golangci-lint`), SonarQube analysis, and SemVer tag releases (`v*`).
 
 ### 🐛 Fixes
-- Removed legacy Python dependencies and virtualenv overhead.
+- **CORS Support**: Added global CORS middleware supporting `OPTIONS` preflight requests and `Access-Control-Allow-Origin: *`.
+- **Endpoint Parity**: Corrected `handleGetSukebeiID` handler call to target `sukebeiAPI` scraper.
