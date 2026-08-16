@@ -178,8 +178,7 @@ func TestAPI_GetTorrentInfo(t *testing.T) {
 	}
 }
 
-func TestModels_AllCategories(t *testing.T) {
-	// Test Constructor
+func TestModels_Constructor(t *testing.T) {
 	apiNyaa := NewNyaaSiAPI(false)
 	if apiNyaa.isSukebei {
 		t.Error("Expected Nyaa API flag false")
@@ -188,7 +187,9 @@ func TestModels_AllCategories(t *testing.T) {
 	if !apiSukebei.isSukebei {
 		t.Error("Expected Sukebei API flag true")
 	}
+}
 
+func TestModels_CategoryParsing(t *testing.T) {
 	// Test Nyaa categories
 	for mainID := 1; mainID <= 6; mainID++ {
 		for subID := 1; subID <= 4; subID++ {
@@ -212,8 +213,9 @@ func TestModels_AllCategories(t *testing.T) {
 			}
 		}
 	}
+}
 
-	// Test MapCategory for all branches
+func TestModels_CategoryMapping(t *testing.T) {
 	nyaaCats := []string{"anime", "audio", "literature", "live_action", "pictures", "software"}
 	for _, c := range nyaaCats {
 		_ = MapCategory(c, "raw", false)
@@ -229,8 +231,9 @@ func TestModels_AllCategories(t *testing.T) {
 	if MapCategory("invalid", "invalid", false) != nil {
 		t.Error("Expected nil for invalid category string")
 	}
+}
 
-	// Test DefaultCategory String formatting
+func TestModels_StringFormatting(t *testing.T) {
 	catMainOnly := DefaultCategory{MainName: "MainOnly"}
 	if catMainOnly.String() != "MainOnly" {
 		t.Errorf("Expected 'MainOnly', got '%s'", catMainOnly.String())
