@@ -10,6 +10,8 @@ import (
 	"github.com/PuerkitoBio/goquery"
 )
 
+const attrDataTimestamp = "data-timestamp"
+
 var (
 	categoryURLRegexp = regexp.MustCompile(`/\?c=([0-9]+)_([0-9]+)`)
 	viewURLRegexp     = regexp.MustCompile(`/view/([0-9]+)`)
@@ -99,7 +101,7 @@ func ParseTorrentList(doc *goquery.Document, isSukebei bool) (SearchResult, erro
 
 		// Metadata
 		size := strings.TrimSpace(cells.Eq(3).Text())
-		dateTS, _ := cells.Eq(4).Attr("data-timestamp")
+		dateTS, _ := cells.Eq(4).Attr(attrDataTimestamp)
 		date := parseTimestamp(dateTS)
 
 		seeders, _ := strconv.Atoi(strings.TrimSpace(cells.Eq(5).Text()))
@@ -123,6 +125,112 @@ func ParseTorrentList(doc *goquery.Document, isSukebei bool) (SearchResult, erro
 	})
 
 	return results, nil
+}
+
+func parsePanelBody(body *goquery.Selection, info *TorrentInfo, isSukebei bool) {
+	rows := body.Find("div.row")
+
+	getCell := func(rowIdx, colIdx int) *goquery.Selection {
+		if rowIdx < rows.Length() {
+			cols := rows.Eq(rowIdx).Find("div.col-md-5")
+			if colIdx < cols.Length() {
+				return cols.Eq(colIdx)
+			}
+		}
+		return nil
+	}
+
+	if cell := getCell(0, 0); cell != nil {
+		catLinks := cell.Find("a")
+		if catLinks.Length() >= 2 {
+			href, _ := catLinks.Eq(1).Attr("href")
+			cat := parseCategoryFromURL(href, isSukebei)
+			info.Category = &cat
+		}
+	}
+	if cell := getCell(1, 0); cell != nil {
+		if uploaderTag := cell.Find("a").First(); uploaderTag.Length() > 0 {
+			info.Uploader = strings.TrimSpace(uploaderTag.Text())
+		}
+	}
+	if cell := getCell(2, 0); cell != nil {
+		info.Information = strings.TrimSpace(cell.Text())
+	}
+	if cell := getCell(3, 0); cell != nil {
+		info.Size = strings.TrimSpace(cell.Text())
+	}
+	if cell := getCell(0, 1); cell != nil {
+		tsStr, _ := cell.Attr(attrDataTimestamp)
+		t := parseTimestamp(tsStr)
+		info.Date = &t
+	}
+	if cell := getCell(1, 1); cell != nil {
+		val, _ := strconv.Atoi(strings.TrimSpace(cell.Find("span").Text()))
+		info.Seeders = val
+	}
+	if cell := getCell(2, 1); cell != nil {
+		val, _ := strconv.Atoi(strings.TrimSpace(cell.Find("span").Text()))
+		info.Leechers = val
+	}
+	if cell := getCell(3, 1); cell != nil {
+		val, _ := strconv.Atoi(strings.TrimSpace(cell.Text()))
+		info.Completed = val
+	}
+	if cell := getCell(4, 0); cell != nil {
+		info.Hash = strings.TrimSpace(cell.Find("kbd").Text())
+	}
+}
+
+func parsePanelFooter(footer *goquery.Selection, info *TorrentInfo, isSukebei bool) {
+	base := "https://nyaa.si"
+	if isSukebei {
+		base = "https://sukebei.nyaa.si"
+	}
+
+	dlTag := footer.Find("a[href^=/download/]").First()
+	if dlTag.Length() > 0 {
+		dlHref, _ := dlTag.Attr("href")
+		if !strings.HasPrefix(dlHref, "http") {
+			dlHref = base + dlHref
+		}
+		info.DownloadLink = dlHref
+	}
+
+	magnetTag := footer.Find("a[href^=magnet:]").First()
+	if magnetTag.Length() == 0 {
+		magnetTag = footer.Find("a.card-footer-item").First()
+	}
+	if magnetTag.Length() > 0 {
+		info.MagnetLink, _ = magnetTag.Attr("href")
+	}
+}
+
+func parseTorrentComments(doc *goquery.Document, info *TorrentInfo) {
+	commentDiv := doc.Find("div#comments")
+	if commentDiv.Length() == 0 {
+		return
+	}
+
+	commentDiv.Find("div.comment-panel").Each(func(i int, s *goquery.Selection) {
+		userLink := s.Find("a[href^=/user/]").First()
+		username := strings.TrimSpace(userLink.Text())
+
+		var cDate time.Time
+		tsTag := s.Find("small[" + attrDataTimestamp + "]").First()
+		if tsTag.Length() > 0 {
+			tsStr, _ := tsTag.Attr(attrDataTimestamp)
+			cDate = parseTimestamp(tsStr)
+		}
+
+		contentDiv := s.Find("div.comment-content").First()
+		text := strings.TrimSpace(contentDiv.Text())
+
+		info.Comments = append(info.Comments, TorrentComment{
+			Username: username,
+			Date:     cDate,
+			Text:     text,
+		})
+	})
 }
 
 func ParseTorrentInfo(doc *goquery.Document, isSukebei bool) (*TorrentInfo, error) {
@@ -149,131 +257,14 @@ func ParseTorrentInfo(doc *goquery.Document, isSukebei bool) (*TorrentInfo, erro
 
 	info.Title = strings.TrimSpace(panel.Find("div.panel-heading .panel-title").First().Text())
 
-	body := panel.Find("div.panel-body")
-	rows := body.Find("div.row")
+	parsePanelBody(panel.Find("div.panel-body"), info, isSukebei)
+	parsePanelFooter(panel.Find("div.panel-footer.clearfix"), info, isSukebei)
 
-	getCell := func(rowIdx, colIdx int) *goquery.Selection {
-		if rowIdx < rows.Length() {
-			cols := rows.Eq(rowIdx).Find("div.col-md-5")
-			if colIdx < cols.Length() {
-				return cols.Eq(colIdx)
-			}
-		}
-		return nil
-	}
-
-	// Category
-	if cell := getCell(0, 0); cell != nil {
-		catLinks := cell.Find("a")
-		if catLinks.Length() >= 2 {
-			href, _ := catLinks.Eq(1).Attr("href")
-			cat := parseCategoryFromURL(href, isSukebei)
-			info.Category = &cat
-		}
-	}
-
-	// Uploader
-	if cell := getCell(1, 0); cell != nil {
-		uploaderTag := cell.Find("a").First()
-		if uploaderTag.Length() > 0 {
-			info.Uploader = strings.TrimSpace(uploaderTag.Text())
-		}
-	}
-
-	// Information
-	if cell := getCell(2, 0); cell != nil {
-		info.Information = strings.TrimSpace(cell.Text())
-	}
-
-	// Size
-	if cell := getCell(3, 0); cell != nil {
-		info.Size = strings.TrimSpace(cell.Text())
-	}
-
-	// Date
-	if cell := getCell(0, 1); cell != nil {
-		tsStr, _ := cell.Attr("data-timestamp")
-		t := parseTimestamp(tsStr)
-		info.Date = &t
-	}
-
-	// Seeders
-	if cell := getCell(1, 1); cell != nil {
-		val, _ := strconv.Atoi(strings.TrimSpace(cell.Find("span").Text()))
-		info.Seeders = val
-	}
-
-	// Leechers
-	if cell := getCell(2, 1); cell != nil {
-		val, _ := strconv.Atoi(strings.TrimSpace(cell.Find("span").Text()))
-		info.Leechers = val
-	}
-
-	// Completed
-	if cell := getCell(3, 1); cell != nil {
-		val, _ := strconv.Atoi(strings.TrimSpace(cell.Text()))
-		info.Completed = val
-	}
-
-	// Hash
-	if cell := getCell(4, 0); cell != nil {
-		info.Hash = strings.TrimSpace(cell.Find("kbd").Text())
-	}
-
-	// Footer (Download & Magnet)
-	footer := panel.Find("div.panel-footer.clearfix")
-	base := "https://nyaa.si"
-	if isSukebei {
-		base = "https://sukebei.nyaa.si"
-	}
-
-	dlTag := footer.Find("a[href^=/download/]").First()
-	if dlTag.Length() > 0 {
-		dlHref, _ := dlTag.Attr("href")
-		if !strings.HasPrefix(dlHref, "http") {
-			dlHref = base + dlHref
-		}
-		info.DownloadLink = dlHref
-	}
-
-	magnetTag := footer.Find("a[href^=magnet:]").First()
-	if magnetTag.Length() == 0 {
-		magnetTag = footer.Find("a.card-footer-item").First()
-	}
-	if magnetTag.Length() > 0 {
-		info.MagnetLink, _ = magnetTag.Attr("href")
-	}
-
-	// Description
-	descDiv := doc.Find("div#torrent-description")
-	if descDiv.Length() > 0 {
+	if descDiv := doc.Find("div#torrent-description"); descDiv.Length() > 0 {
 		info.Description = strings.TrimSpace(descDiv.Text())
 	}
 
-	// Comments
-	commentDiv := doc.Find("div#comments")
-	if commentDiv.Length() > 0 {
-		commentDiv.Find("div.comment-panel").Each(func(i int, s *goquery.Selection) {
-			userLink := s.Find("a[href^=/user/]").First()
-			username := strings.TrimSpace(userLink.Text())
-
-			var cDate time.Time
-			tsTag := s.Find("small[data-timestamp]").First()
-			if tsTag.Length() > 0 {
-				tsStr, _ := tsTag.Attr("data-timestamp")
-				cDate = parseTimestamp(tsStr)
-			}
-
-			contentDiv := s.Find("div.comment-content").First()
-			text := strings.TrimSpace(contentDiv.Text())
-
-			info.Comments = append(info.Comments, TorrentComment{
-				Username: username,
-				Date:     cDate,
-				Text:     text,
-			})
-		})
-	}
+	parseTorrentComments(doc, info)
 
 	return info, nil
 }

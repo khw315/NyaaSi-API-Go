@@ -26,11 +26,14 @@ LABEL org.opencontainers.image.source=https://github.com/khw315/NyaaSi-API-Pytho
 LABEL org.opencontainers.image.licenses=GPL-3.0
 LABEL org.opencontainers.image.description="API for nyaa.si and sukebei.nyaa.si built with Go"
 
-# Install ca-certificates for HTTPS requests to nyaa.si
-RUN apk add --no-cache ca-certificates
+# Install ca-certificates and create a non-root user
+RUN apk add --no-cache ca-certificates && \
+    addgroup -S appgroup && adduser -S appuser -G appgroup
 
 # Copy binary from builder
 COPY --from=builder /app/nyaa-api /app/nyaa-api
+
+USER appuser
 
 EXPOSE 88
 

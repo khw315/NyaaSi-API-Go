@@ -88,6 +88,106 @@ func (c DefaultCategory) String() string {
 	return c.MainName
 }
 
+const (
+	catEnglish    = "English-translated"
+	catNonEnglish = "Non-English-translated"
+	catRaw        = "Raw"
+	catGames      = "Games"
+	subNonEnglish = "non-english"
+)
+
+func parseSukebeiCategory(mainID, subID int) (mainName, subName string) {
+	switch mainID {
+	case 1:
+		mainName = "Art"
+		switch subID {
+		case 1:
+			subName = "Anime"
+		case 2:
+			subName = "Doujinshi"
+		case 3:
+			subName = catGames
+		case 4:
+			subName = "Manga"
+		case 5:
+			subName = "Pictures"
+		}
+	case 2:
+		mainName = "Real Life"
+		switch subID {
+		case 1:
+			subName = "Photobooks and Pictures"
+		case 2:
+			subName = "Videos"
+		}
+	}
+	return
+}
+
+func parseNyaaCategory(mainID, subID int) (mainName, subName string) {
+	switch mainID {
+	case 1:
+		mainName = "Anime"
+		switch subID {
+		case 1:
+			subName = "Anime Music Video"
+		case 2:
+			subName = catEnglish
+		case 3:
+			subName = catNonEnglish
+		case 4:
+			subName = catRaw
+		}
+	case 2:
+		mainName = "Audio"
+		switch subID {
+		case 1:
+			subName = "Lossless"
+		case 2:
+			subName = "Lossy"
+		}
+	case 3:
+		mainName = "Literature"
+		switch subID {
+		case 1:
+			subName = catEnglish
+		case 2:
+			subName = catNonEnglish
+		case 3:
+			subName = catRaw
+		}
+	case 4:
+		mainName = "Live Action"
+		switch subID {
+		case 1:
+			subName = catEnglish
+		case 2:
+			subName = "Idol/Promotional Video"
+		case 3:
+			subName = catNonEnglish
+		case 4:
+			subName = catRaw
+		}
+	case 5:
+		mainName = "Pictures"
+		switch subID {
+		case 1:
+			subName = "Graphics"
+		case 2:
+			subName = "Photos"
+		}
+	case 6:
+		mainName = "Software"
+		switch subID {
+		case 1:
+			subName = "Applications"
+		case 2:
+			subName = catGames
+		}
+	}
+	return
+}
+
 // Helper to construct category from main_id and sub_id
 func ParseCategory(mainID, subID int, isSukebei bool) DefaultCategory {
 	cat := DefaultCategory{
@@ -97,93 +197,90 @@ func ParseCategory(mainID, subID int, isSukebei bool) DefaultCategory {
 	}
 
 	if isSukebei {
-		switch mainID {
-		case 1:
-			cat.MainName = "Art"
-			switch subID {
-			case 1:
-				cat.SubName = "Anime"
-			case 2:
-				cat.SubName = "Doujinshi"
-			case 3:
-				cat.SubName = "Games"
-			case 4:
-				cat.SubName = "Manga"
-			case 5:
-				cat.SubName = "Pictures"
-			}
-		case 2:
-			cat.MainName = "Real Life"
-			switch subID {
-			case 1:
-				cat.SubName = "Photobooks and Pictures"
-			case 2:
-				cat.SubName = "Videos"
-			}
-		}
+		cat.MainName, cat.SubName = parseSukebeiCategory(mainID, subID)
 	} else {
-		switch mainID {
-		case 1:
-			cat.MainName = "Anime"
-			switch subID {
-			case 1:
-				cat.SubName = "Anime Music Video"
-			case 2:
-				cat.SubName = "English-translated"
-			case 3:
-				cat.SubName = "Non-English-translated"
-			case 4:
-				cat.SubName = "Raw"
-			}
-		case 2:
-			cat.MainName = "Audio"
-			switch subID {
-			case 1:
-				cat.SubName = "Lossless"
-			case 2:
-				cat.SubName = "Lossy"
-			}
-		case 3:
-			cat.MainName = "Literature"
-			switch subID {
-			case 1:
-				cat.SubName = "English-translated"
-			case 2:
-				cat.SubName = "Non-English-translated"
-			case 3:
-				cat.SubName = "Raw"
-			}
-		case 4:
-			cat.MainName = "Live Action"
-			switch subID {
-			case 1:
-				cat.SubName = "English-translated"
-			case 2:
-				cat.SubName = "Idol/Promotional Video"
-			case 3:
-				cat.SubName = "Non-English-translated"
-			case 4:
-				cat.SubName = "Raw"
-			}
-		case 5:
-			cat.MainName = "Pictures"
-			switch subID {
-			case 1:
-				cat.SubName = "Graphics"
-			case 2:
-				cat.SubName = "Photos"
-			}
-		case 6:
-			cat.MainName = "Software"
-			switch subID {
-			case 1:
-				cat.SubName = "Applications"
-			case 2:
-				cat.SubName = "Games"
-			}
-		}
+		cat.MainName, cat.SubName = parseNyaaCategory(mainID, subID)
 	}
+
 	return cat
+}
+
+func mapSukebeiCategory(catLower, subLower string) *DefaultCategory {
+	switch catLower {
+	case "art":
+		subMap := map[string]int{
+			"anime":     1,
+			"doujinshi": 2,
+			"games":     3,
+			"manga":     4,
+			"pictures":  5,
+		}
+		subID := subMap[subLower]
+		c := ParseCategory(1, subID, true)
+		return &c
+	case "real", "real_life":
+		subMap := map[string]int{
+			"photobooks": 1,
+			"videos":     2,
+		}
+		subID := subMap[subLower]
+		c := ParseCategory(2, subID, true)
+		return &c
+	}
+	return nil
+}
+
+func mapNyaaCategory(catLower, subLower string) *DefaultCategory {
+	switch catLower {
+	case "anime":
+		subMap := map[string]int{
+			"amv":         1,
+			"english":     2,
+			subNonEnglish: 3,
+			"raw":         4,
+		}
+		c := ParseCategory(1, subMap[subLower], false)
+		return &c
+	case "audio":
+		subMap := map[string]int{
+			"lossless": 1,
+			"lossy":    2,
+		}
+		c := ParseCategory(2, subMap[subLower], false)
+		return &c
+	case "literature":
+		subMap := map[string]int{
+			"english":     1,
+			subNonEnglish: 2,
+			"raw":         3,
+		}
+		c := ParseCategory(3, subMap[subLower], false)
+		return &c
+	case "live_action":
+		subMap := map[string]int{
+			"english":     1,
+			"idol_pv":     2,
+			subNonEnglish: 3,
+			"raw":         4,
+		}
+		c := ParseCategory(4, subMap[subLower], false)
+		return &c
+	case "pictures":
+		subMap := map[string]int{
+			"graphics": 1,
+			"photos":   2,
+		}
+		c := ParseCategory(5, subMap[subLower], false)
+		return &c
+	case "software":
+		subMap := map[string]int{
+			"applications": 1,
+			"games":        2,
+		}
+		c := ParseCategory(6, subMap[subLower], false)
+		return &c
+	}
+	return nil
 }
 
 // Map string category and subcategory to category struct
@@ -195,133 +292,9 @@ func MapCategory(catStr, subCatStr string, isSukebei bool) *DefaultCategory {
 	subLower := strings.ToLower(subCatStr)
 
 	if isSukebei {
-		switch catLower {
-		case "art":
-			switch subLower {
-			case "anime":
-				c := ParseCategory(1, 1, true)
-				return &c
-			case "doujinshi":
-				c := ParseCategory(1, 2, true)
-				return &c
-			case "games":
-				c := ParseCategory(1, 3, true)
-				return &c
-			case "manga":
-				c := ParseCategory(1, 4, true)
-				return &c
-			case "pictures":
-				c := ParseCategory(1, 5, true)
-				return &c
-			default:
-				c := ParseCategory(1, 0, true)
-				return &c
-			}
-		case "real", "real_life":
-			switch subLower {
-			case "photobooks":
-				c := ParseCategory(2, 1, true)
-				return &c
-			case "videos":
-				c := ParseCategory(2, 2, true)
-				return &c
-			default:
-				c := ParseCategory(2, 0, true)
-				return &c
-			}
-		}
-	} else {
-		switch catLower {
-		case "anime":
-			switch subLower {
-			case "amv":
-				c := ParseCategory(1, 1, false)
-				return &c
-			case "english":
-				c := ParseCategory(1, 2, false)
-				return &c
-			case "non-english":
-				c := ParseCategory(1, 3, false)
-				return &c
-			case "raw":
-				c := ParseCategory(1, 4, false)
-				return &c
-			default:
-				c := ParseCategory(1, 0, false)
-				return &c
-			}
-		case "audio":
-			switch subLower {
-			case "lossless":
-				c := ParseCategory(2, 1, false)
-				return &c
-			case "lossy":
-				c := ParseCategory(2, 2, false)
-				return &c
-			default:
-				c := ParseCategory(2, 0, false)
-				return &c
-			}
-		case "literature":
-			switch subLower {
-			case "english":
-				c := ParseCategory(3, 1, false)
-				return &c
-			case "non-english":
-				c := ParseCategory(3, 2, false)
-				return &c
-			case "raw":
-				c := ParseCategory(3, 3, false)
-				return &c
-			default:
-				c := ParseCategory(3, 0, false)
-				return &c
-			}
-		case "live_action":
-			switch subLower {
-			case "english":
-				c := ParseCategory(4, 1, false)
-				return &c
-			case "idol_pv":
-				c := ParseCategory(4, 2, false)
-				return &c
-			case "non-english":
-				c := ParseCategory(4, 3, false)
-				return &c
-			case "raw":
-				c := ParseCategory(4, 4, false)
-				return &c
-			default:
-				c := ParseCategory(4, 0, false)
-				return &c
-			}
-		case "pictures":
-			switch subLower {
-			case "graphics":
-				c := ParseCategory(5, 1, false)
-				return &c
-			case "photos":
-				c := ParseCategory(5, 2, false)
-				return &c
-			default:
-				c := ParseCategory(5, 0, false)
-				return &c
-			}
-		case "software":
-			switch subLower {
-			case "applications":
-				c := ParseCategory(6, 1, false)
-				return &c
-			case "games":
-				c := ParseCategory(6, 2, false)
-				return &c
-			default:
-				c := ParseCategory(6, 0, false)
-				return &c
-			}
-		}
+		return mapSukebeiCategory(catLower, subLower)
 	}
-	return nil
+	return mapNyaaCategory(catLower, subLower)
 }
 
 // SearchRequest holds options for querying Nyaa/Sukebei

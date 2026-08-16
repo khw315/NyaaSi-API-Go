@@ -2,7 +2,6 @@ package main
 
 import (
 	"encoding/json"
-	"errors"
 	"fmt"
 	"log"
 	"net/http"
@@ -10,6 +9,11 @@ import (
 	"strings"
 
 	"github.com/khw315/NyaaSi-API-Python/pkg/scraper"
+)
+
+const (
+	errNoTorrentFound  = "No torrent/magnet link found"
+	errTorrentNotFound = "Torrent not found"
 )
 
 type Server struct {
@@ -100,7 +104,7 @@ func (s *Server) handleSearchNyaa(w http.ResponseWriter, r *http.Request) {
 	req := buildSearchRequest(r, false)
 	results, err := s.nyaaAPI.Search(req)
 	if err != nil || len(results) == 0 {
-		writeError(w, http.StatusNotFound, "No torrent/magnet link found")
+		writeError(w, http.StatusNotFound, errNoTorrentFound)
 		return
 	}
 	writeJSON(w, http.StatusOK, results.ToDict())
@@ -110,7 +114,7 @@ func (s *Server) handleSearchSukebei(w http.ResponseWriter, r *http.Request) {
 	req := buildSearchRequest(r, true)
 	results, err := s.sukebeiAPI.Search(req)
 	if err != nil || len(results) == 0 {
-		writeError(w, http.StatusNotFound, "No torrent/magnet link found")
+		writeError(w, http.StatusNotFound, errNoTorrentFound)
 		return
 	}
 	writeJSON(w, http.StatusOK, results.ToDict())
@@ -120,17 +124,13 @@ func (s *Server) handleGetNyaaID(w http.ResponseWriter, r *http.Request) {
 	idStr := r.PathValue("torrent_id")
 	torrentID, err := strconv.Atoi(idStr)
 	if err != nil {
-		writeError(w, http.StatusNotFound, "Torrent not found")
+		writeError(w, http.StatusNotFound, errTorrentNotFound)
 		return
 	}
 
 	info, err := s.nyaaAPI.GetTorrentInfo(torrentID)
 	if err != nil {
-		if errors.Is(err, scraper.ErrNotFound) {
-			writeError(w, http.StatusNotFound, "Torrent not found")
-			return
-		}
-		writeError(w, http.StatusNotFound, "Torrent not found")
+		writeError(w, http.StatusNotFound, errTorrentNotFound)
 		return
 	}
 
@@ -141,17 +141,13 @@ func (s *Server) handleGetSukebeiID(w http.ResponseWriter, r *http.Request) {
 	idStr := r.PathValue("torrent_id")
 	torrentID, err := strconv.Atoi(idStr)
 	if err != nil {
-		writeError(w, http.StatusNotFound, "Torrent not found")
+		writeError(w, http.StatusNotFound, errTorrentNotFound)
 		return
 	}
 
-	info, err := s.sukebeiAPI.GetTorrentInfo(torrentID)
+	info, err := s.nyaaAPI.GetTorrentInfo(torrentID)
 	if err != nil {
-		if errors.Is(err, scraper.ErrNotFound) {
-			writeError(w, http.StatusNotFound, "Torrent not found")
-			return
-		}
-		writeError(w, http.StatusNotFound, "Torrent not found")
+		writeError(w, http.StatusNotFound, errTorrentNotFound)
 		return
 	}
 
@@ -161,7 +157,7 @@ func (s *Server) handleGetSukebeiID(w http.ResponseWriter, r *http.Request) {
 func (s *Server) handleSearchNyaaUser(w http.ResponseWriter, r *http.Request) {
 	userName := r.PathValue("user_name")
 	if userName == "" {
-		writeError(w, http.StatusNotFound, "No torrent/magnet link found")
+		writeError(w, http.StatusNotFound, errNoTorrentFound)
 		return
 	}
 
@@ -170,7 +166,7 @@ func (s *Server) handleSearchNyaaUser(w http.ResponseWriter, r *http.Request) {
 
 	results, err := s.nyaaAPI.Search(req)
 	if err != nil || len(results) == 0 {
-		writeError(w, http.StatusNotFound, "No torrent/magnet link found")
+		writeError(w, http.StatusNotFound, errNoTorrentFound)
 		return
 	}
 	writeJSON(w, http.StatusOK, results.ToDict())
@@ -179,7 +175,7 @@ func (s *Server) handleSearchNyaaUser(w http.ResponseWriter, r *http.Request) {
 func (s *Server) handleSearchSukebeiUser(w http.ResponseWriter, r *http.Request) {
 	userName := r.PathValue("user_name")
 	if userName == "" {
-		writeError(w, http.StatusNotFound, "No torrent/magnet link found")
+		writeError(w, http.StatusNotFound, errNoTorrentFound)
 		return
 	}
 
@@ -188,7 +184,7 @@ func (s *Server) handleSearchSukebeiUser(w http.ResponseWriter, r *http.Request)
 
 	results, err := s.sukebeiAPI.Search(req)
 	if err != nil || len(results) == 0 {
-		writeError(w, http.StatusNotFound, "No torrent/magnet link found")
+		writeError(w, http.StatusNotFound, errNoTorrentFound)
 		return
 	}
 	writeJSON(w, http.StatusOK, results.ToDict())
