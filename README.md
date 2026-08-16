@@ -73,7 +73,7 @@ Search for torrents uploaded by a specific user. Supports the same query paramet
 
 ---
 
-### 🏗️ System Architecture & Data Flow
+### System Architecture & Data Flow
 
 #### Component Architecture
 ```mermaid
